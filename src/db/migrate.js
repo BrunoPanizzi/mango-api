@@ -1,6 +1,4 @@
 import { readFileSync } from 'node:fs'
-
-import { get_db } from "./index.js";
 import path from 'node:path';
 
 
@@ -12,8 +10,11 @@ import path from 'node:path';
  * 
  * @returns {Promise<void>}
  */
-export async function migrate() {
-    const conn = await get_db()
+export async function migrate(conn) {
+    if (process.env.MIGRATE_DB !== "true") {
+        console.log("Migrações desativadas");
+        return;
+    }
 
     const migrations = readFileSync(
         path.join(process.cwd(), "src", "db", "migrations", "0001.sql")

@@ -17,16 +17,17 @@ export async function get_db() {
     }
 
     const client = await pool.connect();
-    console.log("Criou o pool de conexão");
-
-    const res = await client.query("select now()");
-    console.log(res.rows[0]);
 
     return client
 }
 
-export async function selectUsuarios(){
-    const client = await connect();
-    const res = await client.query("SELECT * from alunos");
-    return res.rows;
+/**
+ * Função utilizada para liberar a conexão ao banco
+ * @returns {Promise<void>}
+ */
+export async function cleanup() {
+    if (pool) {
+        await pool.end();
+        pool = null;
+    }
 }

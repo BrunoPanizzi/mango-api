@@ -3,7 +3,7 @@ CREATE TABLE usuarios (
     id_usuarios SERIAL,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    senha VARCHAR(100) NOT NULL,
+    hash_senha VARCHAR(100) NOT NULL, -- por favor não deixar senhas no banco
     tipo_usuario VARCHAR(20) NOT NULL,
     CONSTRAINT PK_usuarios PRIMARY KEY (id_usuarios)
 );
@@ -74,7 +74,6 @@ CREATE TABLE alunos_turmas (
 
 -- Tabela de notas
 CREATE TABLE notas (
-<<<<<<< Updated upstream:DB.txt
     id_notas SERIAL,
     aluno_id INTEGER,
     materia_id INTEGER,
@@ -191,22 +190,3 @@ CREATE TABLE ocorrencias (
     CONSTRAINT FK_ocorrencia_aluno FOREIGN KEY (aluno_id) REFERENCES alunos(id_alunos),
     CONSTRAINT FK_ocorrencia_usuario FOREIGN KEY (registrada_por) REFERENCES usuarios(id_usuarios)
 );
-
-INSERT INTO usuarios (nome, email, senha, tipo_usuario)
-VALUES 
-  ('Maria Souza', 'maria.souza@email.com', 'senha123', 'aluno'),
-  ('João Silva', 'joao.silva@email.com', 'senha456', 'professor'),
-  ('Ana Oliveira', 'ana.oliveira@email.com', 'senha789', 'secretaria');
-
-
-SELECT * from usuarios
-=======
-    id_nota SERIAL,
-    id_avaliacao INTEGER NOT NULL,
-    id_aluno INTEGER NOT NULL,
-    nota NUMERIC(5,2) NOT NULL, -- Ex: 8.50, 10.00
-    CONSTRAINT pk_notas PRIMARY KEY (id_nota),
-    CONSTRAINT fk_notas_avaliacao FOREIGN KEY (id_avaliacao) REFERENCES avaliacoes(id_avaliacao),
-    CONSTRAINT fk_notas_aluno FOREIGN KEY (id_aluno) REFERENCES alunos(id_aluno)
-);
->>>>>>> Stashed changes:src/db/migrations/0001.sql
