@@ -54,13 +54,13 @@ export class Usuario {
      * @return {Usuario} Uma instância de Usuario
      */
     static fromRow(row) {
-        return new Usuario(
-            row.id_usuarios,
-            row.nome,
-            row.email,
-            row.hash_senha,
-            row.tipo_usuario
-        );
+        return Usuario.fromObj({
+            id: row.id_usuarios,
+            nome: row.nome,
+            email: row.email,
+            hash_senha: row.hash_senha,
+            tipo_usuario: row.tipo_usuario
+        });
     }
 
     /**

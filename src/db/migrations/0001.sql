@@ -4,7 +4,7 @@ CREATE TABLE usuarios (
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     hash_senha VARCHAR(100) NOT NULL, -- por favor não deixar senhas no banco
-    tipo_usuario VARCHAR(20) NOT NULL,
+    tipo_usuario VARCHAR(20) NOT NULL, -- redundante?
     CONSTRAINT PK_usuarios PRIMARY KEY (id_usuarios)
 );
 
