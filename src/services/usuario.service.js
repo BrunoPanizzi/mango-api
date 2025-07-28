@@ -2,12 +2,16 @@ import { hash } from 'bcrypt'
 
 import { NovoUsuario, Usuario } from '../entities/usuario.js';
 
+import { HashingService } from './hashing.service.js';
+
 export class UsuarioService {
     /**
      * @param {import('../db/index.js').PoolClient}
+     * @param {HashingService} hashingService
      */
-    constructor(db) {
+    constructor(db, hashingService) {
         this.db = db;
+        this.hashingService = hashingService;
     }
 
     /**
@@ -35,13 +39,29 @@ export class UsuarioService {
     }
 
     /**
+     * Obtém um usuário pelo email, se existir
+     * @param {string} email
+     * @returns {Promise<Usuario|null>}
+     */
+    async getByEmail(email) {
+        const res = await this.db.query("SELECT * FROM usuarios WHERE email = $1", [email]);
+
+        if (res.rows.length === 0) {
+            return null;
+        }
+
+        return Usuario.fromRow(res.rows[0]);
+    }
+
+    /**
      * Cria um novo usuário no banco de dados
      * @param {NovoUsuario} novoUsuario - O usuário a ser criado
      * 
      * @returns {Promise<Usuario>} retorna o usuário criado
      */
     async create(novoUsuario) {
-        const passwordHash = await hash(novoUsuario.senha, 10);
+        console.log('Criando novo usuário:', novoUsuario);
+        const passwordHash = await this.hashingService.hash(novoUsuario.senha);
 
         const res = await this.db.query(
             "INSERT INTO usuarios (nome, email, hash_senha, tipo_usuario) VALUES ($1, $2, $3, $4) RETURNING *",

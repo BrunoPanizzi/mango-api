@@ -160,4 +160,31 @@ describe('Professor Service', async () => {
         assert.ok(updatedProfessor.usuario instanceof Usuario);
         assert.strictEqual(updatedProfessor.usuario.nome, 'Professor Update');
     });
+
+    it('should get a professor by usuario_id', async () => {
+        const novoUsuario = NovoUsuario.fromObj({
+            nome: 'Professor ByUser',
+            senha: 'senha',
+            email: 'professor.byuser@test.com',
+            tipo_usuario: 'professor',
+        });
+        const novoProfessor = NovoProfessor.fromObj({
+            usuario: novoUsuario,
+            disciplina_especialidade: 'História'
+        });
+
+        const createdProfessor = await professorService.create(novoProfessor);
+
+        const professor = await professorService.getByUsuarioId(createdProfessor.usuario.id);
+
+        assert.ok(professor instanceof Professor);
+        assert.strictEqual(professor.usuario.nome, 'Professor ByUser');
+        assert.strictEqual(professor.usuario.email, 'professor.byuser@test.com');
+        assert.strictEqual(professor.disciplina_especialidade, 'História');
+    });
+
+    it('should return null when getting a professor by non-existent usuario_id', async () => {
+        const professor = await professorService.getByUsuarioId(9999);
+        assert.strictEqual(professor, null);
+    });
 });

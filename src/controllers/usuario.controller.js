@@ -1,16 +1,22 @@
 import { Router } from 'express';
+
 import { UsuarioService } from '../services/usuario.service.js';
+
+import { createAuthMiddleware } from './auth.middleware.js';
 
 /**
  * Cria e retorna um router de usuário, recebendo a conexão db
  * 
  * @param {import('../db/index.js').PoolClient} db
+ * @param {HashingService} hashingService
  * 
  * @returns {Router}
  */
-export function createUsuarioRouter(db) {
-    const usuarioService = new UsuarioService(db);
+export function createUsuarioRouter(db, hashingService) {
+    const usuarioService = new UsuarioService(db, hashingService);
     const router = Router();
+
+    router.use(createAuthMiddleware(hashingService));
 
     router.get('/', async (req, res) => {
         const usuarios = await usuarioService.list();

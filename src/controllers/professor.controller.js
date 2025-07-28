@@ -1,18 +1,24 @@
 import { Router } from 'express';
+
 import { ProfessorService } from '../services/professor.service.js';
 import { UsuarioService } from '../services/usuario.service.js';
+
+import { createAuthMiddleware } from './auth.middleware.js';
 
 /**
  * Cria e retorna um router de professor, recebendo a conexão db
  * 
  * @param {import('../db/index.js').PoolClient} db
+ * @param {HashingService} hashingService
  * 
  * @returns {Router}
  */
-export function createProfessorRouter(db) {
-    const usuarioService = new UsuarioService(db);
+export function createProfessorRouter(db, hashingService) {
+    const usuarioService = new UsuarioService(db, hashingService);
     const professorService = new ProfessorService(db, usuarioService);
     const router = Router();
+
+    router.use(createAuthMiddleware(hashingService))
 
     router.get('/', async (req, res) => {
         const professores = await professorService.list();

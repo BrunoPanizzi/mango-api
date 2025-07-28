@@ -1,18 +1,25 @@
 import { Router } from 'express';
+
 import { AlunoService } from '../services/aluno.service.js';
 import { UsuarioService } from '../services/usuario.service.js';
+import { HashingService } from '../services/hashing.service.js';
+
+import { createAuthMiddleware } from './auth.middleware.js';
 
 /**
  * Cria e retorna um router de aluno, recebendo a conexão db
  * 
  * @param {import('../db/index.js').PoolClient} db
+ * @param {HashingService} hashingService
  * 
  * @returns {Router}
  */
-export function createAlunoRouter(db) {
-    const usuarioService = new UsuarioService(db);
+export function createAlunoRouter(db, hashingService) {
+    const usuarioService = new UsuarioService(db, hashingService);
     const alunoService = new AlunoService(db, usuarioService);
     const router = Router();
+
+    router.use(createAuthMiddleware(hashingService))
 
     router.get('/', async (req, res) => {
         const alunos = await alunoService.list();
@@ -31,6 +38,7 @@ export function createAlunoRouter(db) {
 
     router.post('/', async (req, res) => {
         const novoAluno = req.body;
+        console.log('Criando novo aluno:', novoAluno);
 
         try {
             const alunoCriado = await alunoService.create(novoAluno);

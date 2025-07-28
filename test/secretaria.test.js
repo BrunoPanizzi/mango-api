@@ -138,4 +138,29 @@ describe('Secretaria Service', async () => {
         const deletedSecretaria = await secretariaService.getById(createdSecretaria.id);
         assert.strictEqual(deletedSecretaria, null);
     });
+
+    it('should get a secretaria by usuario_id', async () => {
+        const novoUsuario = NovoUsuario.fromObj({
+            nome: 'Secretaria ByUser',
+            senha: 'senha',
+            email: 'secretaria.byuser@test.com',
+            tipo_usuario: 'secretaria',
+        });
+        const novoSecretaria = NovoSecretaria.fromObj({
+            usuario: novoUsuario
+        });
+
+        const createdSecretaria = await secretariaService.create(novoSecretaria);
+
+        const secretaria = await secretariaService.getByUsuarioId(createdSecretaria.usuario.id);
+
+        assert.ok(secretaria instanceof Secretaria);
+        assert.strictEqual(secretaria.usuario.nome, 'Secretaria ByUser');
+        assert.strictEqual(secretaria.usuario.email, 'secretaria.byuser@test.com');
+    });
+
+    it('should return null when getting a secretaria by non-existent usuario_id', async () => {
+        const secretaria = await secretariaService.getByUsuarioId(9999);
+        assert.strictEqual(secretaria, null);
+    });
 });

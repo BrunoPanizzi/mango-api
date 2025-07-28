@@ -1,18 +1,24 @@
 import { Router } from 'express';
+
 import { SecretariaService } from '../services/secretaria.service.js';
 import { UsuarioService } from '../services/usuario.service.js';
+
+import { createAuthMiddleware } from './auth.middleware.js';
 
 /**
  * Cria e retorna um router de secretaria, recebendo a conexão db
  * 
  * @param {import('../db/index.js').PoolClient} db
+ * @param {HashingService} hashingService
  * 
  * @returns {Router}
  */
-export function createSecretariaRouter(db) {
-    const usuarioService = new UsuarioService(db);
+export function createSecretariaRouter(db, hashingService) {
+    const usuarioService = new UsuarioService(db, hashingService);
     const secretariaService = new SecretariaService(db, usuarioService);
     const router = Router();
+
+    router.use(createAuthMiddleware(hashingService));
 
     router.get('/', async (req, res) => {
         const secretarias = await secretariaService.list();

@@ -117,4 +117,22 @@ export class SecretariaService {
         // Deleta usuário
         await this.db.query("DELETE FROM usuarios WHERE id_usuarios = $1", [usuario_id]);
     }
+
+    /**
+     * Busca uma secretaria pelo usuario_id
+     * @param {number} usuarioId
+     * @returns {Promise<Secretaria|null>}
+     */
+    async getByUsuarioId(usuarioId) {
+        const res = await this.db.query(
+            `SELECT s.*, u.id_usuarios, u.nome, u.email, u.hash_senha, u.tipo_usuario
+             FROM secretaria s
+             JOIN usuarios u ON s.usuario_id = u.id_usuarios
+             WHERE s.usuario_id = $1`,
+            [usuarioId]
+        );
+        if (res.rows.length === 0) return null;
+        const row = res.rows[0];
+        return Secretaria.fromRow(row, Usuario.fromRow(row));
+    }
 }

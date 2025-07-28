@@ -74,6 +74,24 @@ export class AlunoService {
     }
 
     /**
+     * Busca um aluno pelo usuario_id
+     * @param {number} usuarioId
+     * @returns {Promise<Aluno|null>}
+     */
+    async getByUsuarioId(usuarioId) {
+        const res = await this.db.query(
+            `SELECT a.*, u.id_usuarios, u.nome, u.email, u.hash_senha, u.tipo_usuario
+             FROM alunos a
+             JOIN usuarios u ON a.usuario_id = u.id_usuarios
+             WHERE a.usuario_id = $1`,
+            [usuarioId]
+        );
+        if (res.rows.length === 0) return null;
+        const row = res.rows[0];
+        return Aluno.fromRow(row, Usuario.fromRow(row));
+    }
+
+    /**
      * Lista todos os alunos
      * @returns {Promise<Aluno[]>}
      */

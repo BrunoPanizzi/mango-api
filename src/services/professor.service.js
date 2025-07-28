@@ -48,6 +48,24 @@ export class ProfessorService {
         const row = res.rows[0];
 
         return Professor.fromRow(row, Usuario.fromRow(row));
+   }
+
+    /**
+     * Busca um professor pelo usuario_id
+     * @param {number} usuarioId
+     * @returns {Promise<Professor|null>}
+     */
+    async getByUsuarioId(usuarioId) {
+        const res = await this.db.query(
+            `SELECT p.*, u.id_usuarios, u.nome, u.email, u.hash_senha, u.tipo_usuario
+             FROM professores p
+             JOIN usuarios u ON p.usuario_id = u.id_usuarios
+             WHERE p.usuario_id = $1`,
+            [usuarioId]
+        );
+        if (res.rows.length === 0) return null;
+        const row = res.rows[0];
+        return Professor.fromRow(row, Usuario.fromRow(row));
     }
 
     /**

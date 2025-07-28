@@ -69,6 +69,26 @@ describe('Usuario Service', async () => {
         assert.ok(usuarios[1] instanceof Usuario);
     })
 
+    it('should get a user by email', async () => {
+        const novoUsuario = NovoUsuario.fromObj({
+            nome: 'Email User',
+            senha: 'senha',
+            email: 'email@example.com',
+            tipo_usuario: 'professor'
+        });
+        await usuarioService.create(novoUsuario);
+
+        const usuario = await usuarioService.getByEmail('email@example.com');
+        assert.ok(usuario instanceof Usuario);
+        assert.strictEqual(usuario.nome, 'Email User');
+        assert.strictEqual(usuario.email, 'email@example.com');
+    })
+
+    it('should return null if user not found by email', async () => {
+        const usuario = await usuarioService.getByEmail('notfound@example.com');
+        assert.strictEqual(usuario, null);
+    })
+
     it('should create and update a user', async () => {
         const novoUsuario = NovoUsuario.fromObj({
             nome: 'Update User',

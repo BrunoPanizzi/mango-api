@@ -5,6 +5,7 @@ import { NovoUsuario, Usuario } from '../src/entities/usuario.js';
 import { NovoAluno, Aluno } from '../src/entities/aluno.js';
 import { UsuarioService } from '../src/services/usuario.service.js';
 import { AlunoService } from '../src/services/aluno.service.js';
+import { HashingService } from '../src/services/hashing.service.js';
 
 import { get_db, cleanup } from '../src/db/index.js';
 import { migrate } from '../src/db/migrate.js';
@@ -20,7 +21,7 @@ describe('Aluno Service', async () => {
     beforeEach(async () => {
         db = await get_db();
         await migrate(db);
-        usuarioService = new UsuarioService(db);
+        usuarioService = new UsuarioService(db, new HashingService('testsecret'));
         alunoService = new AlunoService(db, usuarioService);
         await db.query("TRUNCATE TABLE alunos RESTART IDENTITY CASCADE");
         await db.query("TRUNCATE TABLE usuarios RESTART IDENTITY CASCADE");
@@ -275,5 +276,46 @@ describe('Aluno Service', async () => {
 
         const deletedAluno = await alunoService.getById(createdAluno.id);
         assert.strictEqual(deletedAluno, null);
+    });
+
+    it('should get an aluno by usuario_id', async () => {
+        const novoUsuario = NovoUsuario.fromObj({
+            nome: 'Aluno ByUser',
+            senha: 'senha',
+            email: 'aluno.byuser@test.com',
+            tipo_usuario: 'aluno',
+        });
+        const novoAluno = NovoAluno.fromObj({
+            usuario: novoUsuario,
+            data_nascimento: '2015-03-15'
+        });
+
+        const u2 = await usuarioService.create({
+            email: 'u2@test.com',
+            nome: 'U2',
+            senha: 'senha',
+            tipo_usuario: 'aluno'
+        });
+
+        const u3 = await usuarioService.create({
+            email: 'u3@test.com',
+            nome: 'U3',
+            senha: 'senha',
+            tipo_usuario: 'aluno'
+        });
+
+        const createdAluno = await alunoService.create(novoAluno);
+
+        const aluno = await alunoService.getByUsuarioId(createdAluno.usuario.id);
+
+        assert.ok(aluno instanceof Aluno);
+        assert.strictEqual(aluno.usuario.nome, 'Aluno ByUser');
+        assert.strictEqual(aluno.usuario.email, 'aluno.byuser@test.com');
+        assert.strictEqual(aluno.data_nascimento, '2015-03-15');
+    });
+
+    it('should return null when getting an aluno by non-existent usuario_id', async () => {
+        const aluno = await alunoService.getByUsuarioId(9999);
+        assert.strictEqual(aluno, null);
     });
 });
