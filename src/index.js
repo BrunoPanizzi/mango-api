@@ -1,7 +1,9 @@
 import express from "express";
 import { config } from "dotenv"
+import cors from "cors";
 
 import { migrate } from "./db/migrate.js";
+import { seed } from "./db/seed.js";
 import { get_db } from "./db/index.js";
 
 import { createUsuarioRouter } from "./controllers/usuario.controller.js";
@@ -21,8 +23,10 @@ console.log("Conexão com o banco de dados estabelecida");
 const hashingService = new HashingService(process.env.JWT_SECRET);
 
 await migrate(db);
+await seed(db, hashingService);
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {

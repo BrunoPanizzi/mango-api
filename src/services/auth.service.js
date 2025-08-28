@@ -47,6 +47,10 @@ export class AuthService {
             throw new Error('Credenciais inválidas');
         }
 
+        if (usuario.tipo_usuario !== credentials.role) {
+            throw new Error('Role inválida para este usuário');
+        }
+
         let entityService;
         if (usuario.tipo_usuario === 'aluno') {
             entityService = this.alunoService;
@@ -72,7 +76,7 @@ export class AuthService {
                 email: usuario.email,
                 tipo_usuario: usuario.tipo_usuario,
             },
-            entity: {...entity, usuario: undefined},
+            entity: { ...entity, usuario: undefined },
             role: credentials.role
         };
 
