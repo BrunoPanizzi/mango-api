@@ -1,66 +1,64 @@
+import { z } from 'zod';
 import { format } from 'date-fns'
 
 import { Usuario, NovoUsuario } from './usuario.js';
 
+const novoAlunoSchema = z.object({
+    usuario: z.object({
+        nome: z.string(),
+        email: z.string().email(),
+        senha: z.string(),
+        tipo_usuario: z.string()
+    }),
+    data_nascimento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+    responsavel_nome: z.string().nullable().optional(),
+    nome_pai: z.string().nullable().optional(),
+    nome_mae: z.string().nullable().optional(),
+    profissao_pai: z.string().nullable().optional(),
+    profissao_mae: z.string().nullable().optional(),
+    alergias: z.string().nullable().optional(),
+    telefone_pai: z.string().nullable().optional(),
+    telefone_mae: z.string().nullable().optional(),
+    email_pai: z.string().nullable().optional(),
+    email_mae: z.string().nullable().optional(),
+    idade: z.number().nullable().optional(),
+    religiao: z.string().nullable().optional()
+});
+
+const alunoSchema = z.object({
+    id: z.number(),
+    usuario: z.object({
+        id: z.number(),
+        nome: z.string(),
+        email: z.string().email(),
+        hash_senha: z.string(),
+        tipo_usuario: z.string()
+    }),
+    data_nascimento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+    responsavel_nome: z.string().nullable().optional(),
+    nome_pai: z.string().nullable().optional(),
+    nome_mae: z.string().nullable().optional(),
+    profissao_pai: z.string().nullable().optional(),
+    profissao_mae: z.string().nullable().optional(),
+    alergias: z.string().nullable().optional(),
+    telefone_pai: z.string().nullable().optional(),
+    telefone_mae: z.string().nullable().optional(),
+    email_pai: z.string().nullable().optional(),
+    email_mae: z.string().nullable().optional(),
+    idade: z.number().nullable().optional(),
+    religiao: z.string().nullable().optional()
+});
+
 // Representa um novo aluno a ser criado (antes de existir no banco)
 export class NovoAluno {
     /**
-     * @param {NovoUsuario} usuario
-     * @param {string|null} data_nascimento
-     * @param {string|null} responsavel_nome
-     * @param {string|null} nome_pai
-     * @param {string|null} nome_mae
-     * @param {string|null} profissao_pai
-     * @param {string|null} profissao_mae
-     * @param {string|null} alergias
-     * @param {string|null} telefone_pai
-     * @param {string|null} telefone_mae
-     * @param {string|null} email_pai
-     * @param {string|null} email_mae
-     * @param {number|null} idade
-     * @param {string|null} religiao
-     */
-    constructor(
-        usuario,
-        data_nascimento = null,
-        responsavel_nome = null,
-        nome_pai = null,
-        nome_mae = null,
-        profissao_pai = null,
-        profissao_mae = null,
-        alergias = null,
-        telefone_pai = null,
-        telefone_mae = null,
-        email_pai = null,
-        email_mae = null,
-        idade = null,
-        religiao = null
-    ) {
-        this.usuario = usuario;
-
-        if (!data_nascimento?.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            this.data_nascimento = null; // Ensure date is in correct format
-        } else {
-            this.data_nascimento = data_nascimento
-        }
-        this.responsavel_nome = responsavel_nome;
-        this.nome_pai = nome_pai;
-        this.nome_mae = nome_mae;
-        this.profissao_pai = profissao_pai;
-        this.profissao_mae = profissao_mae;
-        this.alergias = alergias;
-        this.telefone_pai = telefone_pai;
-        this.telefone_mae = telefone_mae;
-        this.email_pai = email_pai;
-        this.email_mae = email_mae;
-        this.idade = idade;
-        this.religiao = religiao;
-    }
-
-    /**
-     * Cria uma instância de NovoAluno a partir de um objeto
      * @param {{
-     *   usuario: Object,
+     *   usuario: {
+     *     nome: string,
+     *     email: string,
+     *     senha: string,
+     *     tipo_usuario: string
+     *   },
      *   data_nascimento?: string|null,
      *   responsavel_nome?: string|null,
      *   nome_pai?: string|null,
@@ -75,83 +73,79 @@ export class NovoAluno {
      *   idade?: number|null,
      *   religiao?: string|null
      * }} obj
+     */
+    constructor(obj) {
+        const validated = novoAlunoSchema.parse(obj);
+        this.usuario = new NovoUsuario(validated.usuario);
+        this.data_nascimento = validated.data_nascimento ?? null;
+        this.responsavel_nome = validated.responsavel_nome ?? null;
+        this.nome_pai = validated.nome_pai ?? null;
+        this.nome_mae = validated.nome_mae ?? null;
+        this.profissao_pai = validated.profissao_pai ?? null;
+        this.profissao_mae = validated.profissao_mae ?? null;
+        this.alergias = validated.alergias ?? null;
+        this.telefone_pai = validated.telefone_pai ?? null;
+        this.telefone_mae = validated.telefone_mae ?? null;
+        this.email_pai = validated.email_pai ?? null;
+        this.email_mae = validated.email_mae ?? null;
+        this.idade = validated.idade ?? null;
+        this.religiao = validated.religiao ?? null;
+    }
+
+    /**
+     * Cria uma instância de NovoAluno a partir de um objeto
+     * @param {Object} obj
      * @returns {NovoAluno}
      */
     static fromObj(obj) {
-        return new NovoAluno(
-            NovoUsuario.fromObj(obj.usuario),
-            obj.data_nascimento ?? null,
-            obj.responsavel_nome ?? null,
-            obj.nome_pai ?? null,
-            obj.nome_mae ?? null,
-            obj.profissao_pai ?? null,
-            obj.profissao_mae ?? null,
-            obj.alergias ?? null,
-            obj.telefone_pai ?? null,
-            obj.telefone_mae ?? null,
-            obj.email_pai ?? null,
-            obj.email_mae ?? null,
-            obj.idade ?? null,
-            obj.religiao ?? null
-        );
+        return new NovoAluno(obj);
     }
 }
 
 // Representa um aluno existente no banco
 export class Aluno {
     /**
-     * @param {number} id
-     * @param {Usuario} usuario
-     * @param {string|null} data_nascimento
-     * @param {string|null} responsavel_nome
-     * @param {string|null} nome_pai
-     * @param {string|null} nome_mae
-     * @param {string|null} profissao_pai
-     * @param {string|null} profissao_mae
-     * @param {string|null} alergias
-     * @param {string|null} telefone_pai
-     * @param {string|null} telefone_mae
-     * @param {string|null} email_pai
-     * @param {string|null} email_mae
-     * @param {number|null} idade
-     * @param {string|null} religiao
+     * @param {{
+     *   id: number,
+     *   usuario: {
+     *     id: number,
+     *     nome: string,
+     *     email: string,
+     *     hash_senha: string,
+     *     tipo_usuario: string
+     *   },
+     *   data_nascimento?: string|null,
+     *   responsavel_nome?: string|null,
+     *   nome_pai?: string|null,
+     *   nome_mae?: string|null,
+     *   profissao_pai?: string|null,
+     *   profissao_mae?: string|null,
+     *   alergias?: string|null,
+     *   telefone_pai?: string|null,
+     *   telefone_mae?: string|null,
+     *   email_pai?: string|null,
+     *   email_mae?: string|null,
+     *   idade?: number|null,
+     *   religiao?: string|null
+     * }} obj
      */
-    constructor(
-        id,
-        usuario,
-        data_nascimento = null,
-        responsavel_nome = null,
-        nome_pai = null,
-        nome_mae = null,
-        profissao_pai = null,
-        profissao_mae = null,
-        alergias = null,
-        telefone_pai = null,
-        telefone_mae = null,
-        email_pai = null,
-        email_mae = null,
-        idade = null,
-        religiao = null
-    ) {
-        this.id = id;
-        this.usuario = usuario;
-        if (!data_nascimento?.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            this.data_nascimento = null
-        } else {
-            this.data_nascimento = data_nascimento
-        }
-        this.responsavel_nome = responsavel_nome;
-        this.nome_pai = nome_pai;
-        this.nome_mae = nome_mae;
-        this.profissao_pai = profissao_pai;
-        this.profissao_mae = profissao_mae;
-        this.alergias = alergias;
-        this.telefone_pai = telefone_pai;
-        this.telefone_mae = telefone_mae;
-        this.email_pai = email_pai;
-        this.email_mae = email_mae;
-        this.idade = idade;
-        this.religiao = religiao;
+    constructor(obj) {
+        const validated = alunoSchema.parse(obj);
+        this.id = validated.id;
+        this.usuario = new Usuario(validated.usuario);
+        this.data_nascimento = validated.data_nascimento ?? null;
+        this.responsavel_nome = validated.responsavel_nome ?? null;
+        this.nome_pai = validated.nome_pai ?? null;
+        this.nome_mae = validated.nome_mae ?? null;
+        this.profissao_pai = validated.profissao_pai ?? null;
+        this.profissao_mae = validated.profissao_mae ?? null;
+        this.alergias = validated.alergias ?? null;
+        this.telefone_pai = validated.telefone_pai ?? null;
+        this.telefone_mae = validated.telefone_mae ?? null;
+        this.email_pai = validated.email_pai ?? null;
+        this.email_mae = validated.email_mae ?? null;
+        this.idade = validated.idade ?? null;
+        this.religiao = validated.religiao ?? null;
     }
 
     /**
@@ -162,9 +156,15 @@ export class Aluno {
      */
     static fromRow(row, usuario) {
         const data_nascimento = row.data_nascimento ? format(new Date(row.data_nascimento), 'yyyy-MM-dd') : null
-        return Aluno.fromObj({
+        return new Aluno({
             id: row.id_alunos,
-            usuario,
+            usuario: {
+                id: usuario.id,
+                nome: usuario.nome,
+                email: usuario.email,
+                hash_senha: usuario.hash_senha,
+                tipo_usuario: usuario.tipo_usuario
+            },
             data_nascimento: data_nascimento,
             responsavel_nome: row.responsavel_nome,
             nome_pai: row.nome_pai,
@@ -183,42 +183,10 @@ export class Aluno {
 
     /**
      * Cria uma instância de Aluno a partir de um objeto
-     * @param {{
-     *   id: number,
-     *   usuario: Object,
-     *   data_nascimento?: string|string|null,
-     *   responsavel_nome?: string|null,
-     *   nome_pai?: string|null,
-     *   nome_mae?: string|null,
-     *   profissao_pai?: string|null,
-     *   profissao_mae?: string|null,
-     *   alergias?: string|null,
-     *   telefone_pai?: string|null,
-     *   telefone_mae?: string|null,
-     *   email_pai?: string|null,
-     *   email_mae?: string|null,
-     *   idade?: number|null,
-     *   religiao?: string|null
-     * }} obj
+     * @param {Object} obj
      * @returns {Aluno}
      */
     static fromObj(obj) {
-        return new Aluno(
-            obj.id,
-            Usuario.fromObj(obj.usuario),
-            obj.data_nascimento ?? null,
-            obj.responsavel_nome ?? null,
-            obj.nome_pai ?? null,
-            obj.nome_mae ?? null,
-            obj.profissao_pai ?? null,
-            obj.profissao_mae ?? null,
-            obj.alergias ?? null,
-            obj.telefone_pai ?? null,
-            obj.telefone_mae ?? null,
-            obj.email_pai ?? null,
-            obj.email_mae ?? null,
-            obj.idade ?? null,
-            obj.religiao ?? null
-        );
+        return new Aluno(obj);
     }
 }

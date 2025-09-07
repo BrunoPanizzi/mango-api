@@ -1,31 +1,32 @@
+import { z } from 'zod';
+
+const loginCredentialsSchema = z.object({
+    email: z.string().email(),
+    password: z.string(),
+    role: z.string()
+});
+
 export class LoginCredentials {
     /**
-     * 
-     * @param {string} email 
-     * @param {string} password 
-     * @param {string} role
+     * @param {{
+     *   email: string,
+     *   password: string,
+     *   role: string
+     * }} obj
      */
-    constructor(email, password, role) {
-        this.email = email;
-        this.password = password;
-        this.role = role;
+    constructor(obj) {
+        const validated = loginCredentialsSchema.parse(obj);
+        this.email = validated.email;
+        this.password = validated.password;
+        this.role = validated.role;
     }
 
     /**
      * Cria uma instância de LoginCredentials a partir de um objeto
-     * 
      * @param {Object} obj
-     * @param {string} obj.email
-     * @param {string} obj.password
-     * @param {string} obj.role
-     * 
      * @returns {LoginCredentials}
      */
     static fromObj(obj) {
-        return new LoginCredentials(
-            obj.email,
-            obj.password,
-            obj.role
-        );
+        return new LoginCredentials(obj);
     }
 }
