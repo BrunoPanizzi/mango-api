@@ -24,6 +24,7 @@ export function createAuthMiddleware(hashingService) {
             req.context.user = payload;
             next();
         } catch (err) {
+            console.log(err)
             return res.status(401).json({ error: 'Invalid token' });
         }
     };

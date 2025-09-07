@@ -1,5 +1,4 @@
 import { NovoSecretaria, Secretaria } from '../entities/secretaria.js';
-import { NovoUsuario, Usuario } from '../entities/usuario.js';
 
 import { UsuarioService } from './usuario.service.js';
 
@@ -14,23 +13,23 @@ export class SecretariaService {
     }
 
     /**
-     * Cria uma nova secretaria (cria usuário e secretaria)
+     * Cria uma nova secretaria (usando usuário existente)
      * @param {NovoSecretaria} novoSecretaria
      * @returns {Promise<Secretaria>}
      */
     async create(novoSecretaria) {
-        // Cria usuário
-        const usuario = await this.usuarioService.create(
-            novoSecretaria.usuario
-        );
-
-        // Cria secretaria
+        // Cria secretaria usando o idUsuario fornecido
         const res = await this.db.query(
-            "INSERT INTO secretaria (usuario_id) VALUES ($1) RETURNING *",
-            [usuario.id]
+            "INSERT INTO secretarias (id_usuario) VALUES ($1) RETURNING *",
+            [novoSecretaria.idUsuario]
         );
 
-        return Secretaria.fromRow(res.rows[0], usuario);
+        const row = res.rows[0];
+
+        return Secretaria.fromObj({
+            id: row.id_secretarias,
+            idUsuario: novoSecretaria.idUsuario,
+        });
     }
 
     /**
@@ -40,11 +39,14 @@ export class SecretariaService {
     async list() {
         const res = await this.db.query(
             `SELECT s.*, u.id_usuarios, u.nome, u.email, u.hash_senha, u.tipo_usuario
-             FROM secretaria s
-             JOIN usuarios u ON s.usuario_id = u.id_usuarios`
+             FROM secretarias s
+             JOIN usuarios u ON s.id_usuario = u.id_usuarios`
         );
         return res.rows.map(row =>
-            Secretaria.fromRow(row, Usuario.fromRow(row))
+            Secretaria.fromObj({
+                id: row.id_secretarias,
+                idUsuario: row.id_usuario,
+            })
         );
     }
 
@@ -56,46 +58,39 @@ export class SecretariaService {
     async getById(id) {
         const res = await this.db.query(
             `SELECT s.*, u.id_usuarios, u.nome, u.email, u.hash_senha, u.tipo_usuario
-             FROM secretaria s
-             JOIN usuarios u ON s.usuario_id = u.id_usuarios
-             WHERE s.id_secretaria = $1`,
+             FROM secretarias s
+             JOIN usuarios u ON s.id_usuario = u.id_usuarios
+             WHERE s.id_secretarias = $1`,
             [id]
         );
         if (res.rows.length === 0) return null;
         const row = res.rows[0];
-        return Secretaria.fromRow(row, Usuario.fromRow(row));
+        return Secretaria.fromObj({
+            id: row.id_secretarias,
+            idUsuario: row.id_usuario,
+        });
     }
 
     /**
-     * Atualiza dados da secretaria e do usuário
+     * Atualiza dados da secretaria
      * @param {number} id
      * @param {NovoSecretaria} novoSecretaria
      * @returns {Promise<Secretaria>}
      */
     async update(id, novoSecretaria) {
-        // Busca secretaria para pegar usuario_id
+        // Atualiza o id_usuario da secretaria
         const res = await this.db.query(
-            "SELECT usuario_id FROM secretaria WHERE id_secretaria = $1",
-            [id]
+            "UPDATE secretarias SET id_usuario = $1 WHERE id_secretarias = $2 RETURNING *",
+            [novoSecretaria.idUsuario, id]
         );
         if (res.rows.length === 0) throw new Error("Secretaria não encontrada");
-        const usuario_id = res.rows[0].usuario_id;
 
-        // Atualiza usuário
-        const updatedUsuario = await this.usuarioService.update(
-            usuario_id,
-            novoSecretaria.usuario
-        );
+        const row = res.rows[0];
 
-        // Atualiza secretaria (não há outros campos, apenas retorna)
-        const secretariaRes = await this.db.query(
-            "SELECT * FROM secretaria WHERE id_secretaria = $1",
-            [id]
-        );
-        if (secretariaRes.rows.length === 0) throw new Error("Unreachable code");
-        const row = secretariaRes.rows[0];
-
-        return Secretaria.fromRow(row, updatedUsuario);
+        return Secretaria.fromObj({
+            id: row.id_secretarias,
+            idUsuario: row.id_usuario,
+        });
     }
 
     /**
@@ -104,35 +99,39 @@ export class SecretariaService {
      * @returns {Promise<void>}
      */
     async delete(id) {
-        // Busca secretaria para pegar usuario_id
+        // Busca secretaria para pegar id_usuario
         const res = await this.db.query(
-            "SELECT usuario_id FROM secretaria WHERE id_secretaria = $1",
+            "SELECT id_usuario FROM secretarias WHERE id_secretarias = $1",
             [id]
         );
         if (res.rows.length === 0) throw new Error("Secretaria não encontrada");
-        const usuario_id = res.rows[0].usuario_id;
+        const id_usuario = res.rows[0].id_usuario;
 
         // Deleta secretaria
-        await this.db.query("DELETE FROM secretaria WHERE id_secretaria = $1", [id]);
+        await this.db.query("DELETE FROM secretarias WHERE id_secretarias = $1", [id]);
         // Deleta usuário
-        await this.db.query("DELETE FROM usuarios WHERE id_usuarios = $1", [usuario_id]);
+        await this.db.query("DELETE FROM usuarios WHERE id_usuarios = $1", [id_usuario]);
     }
 
     /**
-     * Busca uma secretaria pelo usuario_id
+     * Busca uma secretaria pelo id_usuario
      * @param {number} usuarioId
      * @returns {Promise<Secretaria|null>}
      */
     async getByUsuarioId(usuarioId) {
         const res = await this.db.query(
             `SELECT s.*, u.id_usuarios, u.nome, u.email, u.hash_senha, u.tipo_usuario
-             FROM secretaria s
-             JOIN usuarios u ON s.usuario_id = u.id_usuarios
-             WHERE s.usuario_id = $1`,
+             FROM secretarias s
+             JOIN usuarios u ON s.id_usuario = u.id_usuarios
+             WHERE s.id_usuario = $1`,
             [usuarioId]
         );
         if (res.rows.length === 0) return null;
         const row = res.rows[0];
-        return Secretaria.fromRow(row, Usuario.fromRow(row));
+
+        return Secretaria.fromObj({
+            id: row.id_secretarias,
+            idUsuario: row.id_usuario,
+        });
     }
 }

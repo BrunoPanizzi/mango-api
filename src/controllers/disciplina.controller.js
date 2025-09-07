@@ -1,5 +1,7 @@
 import { Router } from 'express';
-import { MateriaService } from '../services/materia.service.js';
+
+import { DisciplinaService } from '../services/disciplina.service.js';
+
 import { createAuthMiddleware } from './auth.middleware.js';
 
 /**
@@ -10,30 +12,30 @@ import { createAuthMiddleware } from './auth.middleware.js';
  * 
  * @returns {Router}
  */
-export function createMateriaRouter(db, hashingService) {
-    const materiaService = new MateriaService(db);
+export function createDisciplinaRouter(db, hashingService) {
+    const disciplinaService = new DisciplinaService(db);
     const router = Router();
 
     router.use(createAuthMiddleware(hashingService));
 
     router.get('/', async (req, res) => {
-        const materias = await materiaService.list();
-        res.json(materias);
+        const disciplinas = await disciplinaService.list();
+        res.json(disciplinas);
     });
 
     router.get('/:id', async (req, res) => {
-        const materia = await materiaService.getById(req.params.id);
-        if (!materia) {
-            return res.status(404).json({ error: 'Matéria não encontrada' });
+        const disciplina = await disciplinaService.getById(req.params.id);
+        if (!disciplina) {
+            return res.status(404).json({ error: 'Disciplina não encontrada' });
         }
-        res.json(materia);
+        res.json(disciplina);
     });
 
     router.post('/', async (req, res) => {
-        const novoMateria = req.body;
+        const novaDisciplina = req.body;
         try {
-            const materiaCriada = await materiaService.create(novoMateria);
-            res.status(201).json(materiaCriada);
+            const disciplinaCriada = await disciplinaService.create(novaDisciplina);
+            res.status(201).json(disciplinaCriada);
         } catch (error) {
             res.status(400).json({ error: error.message });
         }
@@ -43,10 +45,10 @@ export function createMateriaRouter(db, hashingService) {
         const id = req.params.id;
         const novoMateria = req.body;
         try {
-            const materiaAtualizada = await materiaService.update(id, novoMateria);
-            res.json(materiaAtualizada);
+            const disciplinaAtualizada = await disciplinaService.update(id, novoMateria);
+            res.json(disciplinaAtualizada);
         } catch (error) {
-            if (error.message === "Matéria não encontrada") {
+            if (error.message === "Disciplina não encontrada") {
                 return res.status(404).json({ error: error.message });
             }
             res.status(400).json({ error: error.message });
@@ -56,10 +58,10 @@ export function createMateriaRouter(db, hashingService) {
     router.delete('/:id', async (req, res) => {
         const id = req.params.id;
         try {
-            await materiaService.delete(id);
+            await disciplinaService.delete(id);
             res.status(204).send();
         } catch (error) {
-            if (error.message === "Matéria não encontrada") {
+            if (error.message === "Disciplina não encontrada") {
                 return res.status(404).json({ error: error.message });
             }
             res.status(400).json({ error: error.message });

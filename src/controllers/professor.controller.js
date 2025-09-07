@@ -1,7 +1,8 @@
 import { Router } from 'express';
 
-import { ProfessorService } from '../services/professor.service.js';
 import { UsuarioService } from '../services/usuario.service.js';
+import { DisciplinaService } from '../services/disciplina.service.js';
+import { ProfessorService } from '../services/professor.service.js';
 
 import { createAuthMiddleware } from './auth.middleware.js';
 
@@ -15,7 +16,8 @@ import { createAuthMiddleware } from './auth.middleware.js';
  */
 export function createProfessorRouter(db, hashingService) {
     const usuarioService = new UsuarioService(db, hashingService);
-    const professorService = new ProfessorService(db, usuarioService);
+    const disciplinaService = new DisciplinaService(db);
+    const professorService = new ProfessorService(db, usuarioService, disciplinaService);
     const router = Router();
 
     router.use(createAuthMiddleware(hashingService))

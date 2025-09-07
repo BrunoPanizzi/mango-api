@@ -1,192 +1,330 @@
--- Tabela principal de usuários
 CREATE TABLE usuarios (
     id_usuarios SERIAL,
+
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     hash_senha VARCHAR(100) NOT NULL, -- por favor não deixar senhas no banco
     tipo_usuario VARCHAR(20) NOT NULL, -- redundante?
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
     CONSTRAINT PK_usuarios PRIMARY KEY (id_usuarios)
 );
 
--- Tabela de alunos
 CREATE TABLE alunos (
     id_alunos SERIAL,
-    usuario_id INTEGER NOT NULL,
-    data_nascimento DATE,
-    responsavel_nome VARCHAR(100),
-    nome_pai VARCHAR(100),
-    nome_mae VARCHAR(100),
-    profissao_pai VARCHAR(100),
-    profissao_mae VARCHAR(100),
-    alergias VARCHAR(100),
-    telefone_pai VARCHAR(16),
-    telefone_mae VARCHAR(16),
-    email_pai VARCHAR(100),
-    email_mae VARCHAR(100),
-    idade INTEGER, 
-    religiao VARCHAR(50), -- Novo campo para religião
-    CONSTRAINT PK_alunos PRIMARY KEY (id_alunos),
-    CONSTRAINT FK_alunos_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id_usuarios)
+
+    nome VARCHAR(150) NOT NULL,
+    cns VARCHAR(20) NOT NULL,
+    nascimento DATE NOT NULL,
+    genero VARCHAR(20) NOT NULL,
+    religiao VARCHAR(100),
+    telefone VARCHAR(20) NOT NULL,
+    logradouro VARCHAR(150) NOT NULL,
+    numero VARCHAR(10) NOT NULL,
+    bairro VARCHAR(100) NOT NULL,
+    cep VARCHAR(10) NOT NULL,
+    cidade VARCHAR(100) NOT NULL,
+    estado VARCHAR(2) NOT NULL,           
+    responsavel1_nome VARCHAR(150) NOT NULL,
+    responsavel1_cpf VARCHAR(14) NOT NULL,
+    responsavel1_telefone VARCHAR(20) NOT NULL,
+    responsavel1_parentesco VARCHAR(50) NOT NULL,
+    responsavel2_nome VARCHAR(150),
+    responsavel2_cpf VARCHAR(14),
+    responsavel2_telefone VARCHAR(20),
+    responsavel2_parentesco VARCHAR(50),
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
+    CONSTRAINT PK_alunos PRIMARY KEY (id_alunos)
 );
 
+CREATE TABLE disciplinas (
+    id_disciplinas SERIAL,
 
--- Tabela de professores
+    nome VARCHAR(50) NOT NULL UNIQUE,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
+    CONSTRAINT PK_disciplinas PRIMARY KEY (id_disciplinas)
+);
+
 CREATE TABLE professores (
     id_professores SERIAL,
-    usuario_id INTEGER NOT NULL,
-    disciplina_especialidade VARCHAR(100),
+    id_usuario INTEGER NOT NULL,
+    id_disciplina_especialidade INTEGER NOT NULL,
+
+    telefone VARCHAR(20) NOT NULL,
+    genero VARCHAR(20) NOT NULL,
+    cpf VARCHAR(14) NOT NULL,
+    nascimento DATE NOT NULL,
+
+    logradouro VARCHAR(150) NOT NULL,
+    numero VARCHAR(10) NOT NULL,
+    bairro VARCHAR(100) NOT NULL,
+    cep VARCHAR(10) NOT NULL,
+    cidade VARCHAR(100) NOT NULL,
+    estado VARCHAR(2) NOT NULL,           
+
+    formacao_academica VARCHAR(200) NOT NULL,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
     CONSTRAINT PK_professores PRIMARY KEY (id_professores),
-    CONSTRAINT FK_professores_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id_usuarios)
+    CONSTRAINT FK_professores_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuarios),
+    CONSTRAINT FK_professores_disciplina FOREIGN KEY (id_disciplina_especialidade) REFERENCES disciplinas(id_disciplinas)
 );
 
--- Tabela de secretarias
-CREATE TABLE secretaria (
-    id_secretaria SERIAL,
-    usuario_id INTEGER NOT NULL,
-    CONSTRAINT PK_secretaria PRIMARY KEY (id_secretaria),
-    CONSTRAINT FK_secretaria_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id_usuarios)
+CREATE TABLE secretarias (
+    id_secretarias SERIAL,
+    id_usuario INTEGER NOT NULL,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
+    CONSTRAINT PK_secretarias PRIMARY KEY (id_secretarias),
+    CONSTRAINT FK_secretarias_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuarios)
 );
 
--- Tabela de turmas
 CREATE TABLE turmas (
     id_turmas SERIAL,
+
     nome VARCHAR(50) NOT NULL,
-    ano_letivo INTEGER,
+    ano_escolar INT NOT NULL,
+    serie VARCHAR(50) NOT NULL,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
     CONSTRAINT PK_turmas PRIMARY KEY (id_turmas)
 );
 
--- Tabela de disciplinas (matérias)
-CREATE TABLE materias (
-    id_materias SERIAL,
-    nome VARCHAR(100) NOT NULL,
-    CONSTRAINT PK_materias PRIMARY KEY (id_materias)
+CREATE TABLE professores_disciplinas (
+    id_professores_disciplinas SERIAL,
+    id_professor INTEGER NOT NULL,
+    id_disciplina INTEGER NOT NULL,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
+    CONSTRAINT PK_professores_disciplinas PRIMARY KEY (id_professores_disciplinas),
+    CONSTRAINT FK_professores_disciplinas_professor FOREIGN KEY (id_professor) REFERENCES professores(id_professores),
+    CONSTRAINT FK_professores_disciplinas_disciplina FOREIGN KEY (id_disciplina) REFERENCES disciplinas(id_disciplinas)
 );
 
--- Tabela de vínculo entre alunos e turmas
 CREATE TABLE alunos_turmas (
     id_alunos_turmas SERIAL,
-    aluno_id INTEGER,
-    turma_id INTEGER,
+    id_aluno INTEGER NOT NULL,
+    id_turma INTEGER NOT NULL,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
     CONSTRAINT PK_alunos_turmas PRIMARY KEY (id_alunos_turmas),
-    CONSTRAINT FK_aluno FOREIGN KEY (aluno_id) REFERENCES alunos(id_alunos),
-    CONSTRAINT FK_turma FOREIGN KEY (turma_id) REFERENCES turmas(id_turmas)
+    CONSTRAINT FK_alunos_turmas_aluno FOREIGN KEY (id_aluno) REFERENCES alunos(id_alunos),
+    CONSTRAINT FK_alunos_turmas_turma FOREIGN KEY (id_turma) REFERENCES turmas(id_turmas)
 );
 
--- Tabela de notas
 CREATE TABLE notas (
     id_notas SERIAL,
-    aluno_id INTEGER,
-    materia_id INTEGER,
-    turma_id INTEGER,
+    id_aluno INTEGER NOT NULL,
+    id_disciplina INTEGER NOT NULL,
+    id_turma INTEGER NOT NULL,
+
     nota DECIMAL(4,2),
     bimestre INTEGER,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
     CONSTRAINT PK_notas PRIMARY KEY (id_notas),
-    CONSTRAINT FK_nota_aluno FOREIGN KEY (aluno_id) REFERENCES alunos(id_alunos),
-    CONSTRAINT FK_nota_materia FOREIGN KEY (materia_id) REFERENCES materias(id_materias),
-    CONSTRAINT FK_nota_turma FOREIGN KEY (turma_id) REFERENCES turmas(id_turmas)
+    CONSTRAINT FK_notas_aluno FOREIGN KEY (id_aluno) REFERENCES alunos(id_alunos),
+    CONSTRAINT FK_notas_disciplina FOREIGN KEY (id_disciplina) REFERENCES disciplinas(id_disciplinas),
+    CONSTRAINT FK_notas_turma FOREIGN KEY (id_turma) REFERENCES turmas(id_turmas)
 );
 
--- Tabela de faltas
+CREATE TABLE disciplinas_notas (
+    id_notas SERIAL,
+    id_aluno INT NOT NULL,
+    id_disciplina INT NOT NULL,
+
+    ano_letivo INT NOT NULL,
+    nota NUMERIC(5,2) NOT NULL,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
+    CONSTRAINT PK_disciplinas_notas PRIMARY KEY (id_notas),
+    CONSTRAINT FK_disciplinas_notas_aluno FOREIGN KEY (id_aluno) REFERENCES alunos(id_alunos),
+    CONSTRAINT FK_disciplinas_notas_disciplina FOREIGN KEY (id_disciplina) REFERENCES disciplinas(id_disciplinas)
+);
+
+CREATE TABLE anos_escolares (
+    id_anos_escolares SERIAL,
+
+    nome VARCHAR(50) NOT NULL UNIQUE,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
+    CONSTRAINT PK_id_anos_escolares PRIMARY KEY (id_anos_escolares)
+);
+
+CREATE TABLE historicos_escolares (
+    id_historicos_escolares SERIAL,
+    id_aluno INT NOT NULL,
+    id_ano_escolar INT NOT NULL,
+
+    nome_escola VARCHAR(150) NOT NULL,
+    serie_concluida VARCHAR(50) NOT NULL,
+    nota NUMERIC(5,2) NOT NULL,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
+    CONSTRAINT PK_id_historicos_escolares PRIMARY KEY (id_historicos_escolares),
+    CONSTRAINT FK_historicos_escolares_aluno FOREIGN KEY (id_aluno) REFERENCES alunos(id_alunos),
+    CONSTRAINT FK_historicos_escolares_ano_escolar FOREIGN KEY (id_ano_escolar) REFERENCES anos_escolares(id_anos_escolares)
+);
+
 CREATE TABLE faltas (
     id_faltas SERIAL,
-    aluno_id INTEGER,
-    materia_id INTEGER,
+    id_aluno INTEGER NOT NULL,
+    id_disciplina INTEGER NOT NULL,
+
     data_falta DATE,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
     CONSTRAINT PK_faltas PRIMARY KEY (id_faltas),
-    CONSTRAINT FK_falta_aluno FOREIGN KEY (aluno_id) REFERENCES alunos(id_alunos),
-    CONSTRAINT FK_falta_materia FOREIGN KEY (materia_id) REFERENCES materias(id_materias)
+    CONSTRAINT FK_faltas_aluno FOREIGN KEY (id_aluno) REFERENCES alunos(id_alunos),
+    CONSTRAINT FK_faltas_disciplina FOREIGN KEY (id_disciplina) REFERENCES disciplinas(id_disciplinas)
 );
 
--- Tabela de recados
 CREATE TABLE recados (
     id_recados SERIAL,
+    id_professor INTEGER NOT NULL,
+    id_turma INTEGER NOT NULL,
+
     titulo VARCHAR(100),
     mensagem TEXT,
     data_envio DATE DEFAULT CURRENT_DATE,
-    professor_id INTEGER,
-    turma_id INTEGER,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
     CONSTRAINT PK_recados PRIMARY KEY (id_recados),
-    CONSTRAINT FK_recado_professor FOREIGN KEY (professor_id) REFERENCES professores(id_professores),
-    CONSTRAINT FK_recado_turma FOREIGN KEY (turma_id) REFERENCES turmas(id_turmas)
+    CONSTRAINT FK_recados_professor FOREIGN KEY (id_professor) REFERENCES professores(id_professores),
+    CONSTRAINT FK_recados_turma FOREIGN KEY (id_turma) REFERENCES turmas(id_turmas)
 );
 
--- Tabela de tarefas
 CREATE TABLE tarefas (
     id_tarefas SERIAL,
+    id_professor INTEGER NOT NULL,
+    id_turma INTEGER NOT NULL,
+    id_disciplina INTEGER NOT NULL,
+
     titulo VARCHAR(100) NOT NULL,
     descricao TEXT,
     data_entrega DATE,
-    professor_id INTEGER,
-    turma_id INTEGER,
-    materia_id INTEGER,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
     CONSTRAINT PK_tarefas PRIMARY KEY (id_tarefas),
-    CONSTRAINT FK_tarefas_professor FOREIGN KEY (professor_id) REFERENCES professores(id_professores),
-    CONSTRAINT FK_tarefas_turma FOREIGN KEY (turma_id) REFERENCES turmas(id_turmas),
-    CONSTRAINT FK_tarefas_materia FOREIGN KEY (materia_id) REFERENCES materias(id_materias)
+    CONSTRAINT FK_tarefas_professor FOREIGN KEY (id_professor) REFERENCES professores(id_professores),
+    CONSTRAINT FK_tarefas_turma FOREIGN KEY (id_turma) REFERENCES turmas(id_turmas),
+    CONSTRAINT FK_tarefas_disciplina FOREIGN KEY (id_disciplina) REFERENCES disciplinas(id_disciplinas)
 );
 
--- Tabela de entregas de tarefas
 CREATE TABLE entregas_tarefas (
     id_entregas_tarefas SERIAL,
-    tarefa_id INTEGER,
-    aluno_id INTEGER,
+    id_tarefa INTEGER NOT NULL,
+    id_aluno INTEGER NOT NULL,
+
     data_entrega TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     conteudo TEXT,
     nota DECIMAL(4,2),
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
     CONSTRAINT PK_entregas_tarefas PRIMARY KEY (id_entregas_tarefas),
-    CONSTRAINT FK_entregas_tarefa FOREIGN KEY (tarefa_id) REFERENCES tarefas(id_tarefas),
-    CONSTRAINT FK_entregas_aluno FOREIGN KEY (aluno_id) REFERENCES alunos(id_alunos)
+    CONSTRAINT FK_entregas_tarefas_tarefa FOREIGN KEY (id_tarefa) REFERENCES tarefas(id_tarefas),
+    CONSTRAINT FK_entregas_tarefas_aluno FOREIGN KEY (id_aluno) REFERENCES alunos(id_alunos)
 );
 
--- Tabela de materiais didáticos
 CREATE TABLE materiais_didaticos (
     id_materiais_didaticos SERIAL,
+    id_professor INTEGER NOT NULL,
+    id_turma INTEGER NOT NULL,
+    id_disciplina INTEGER NOT NULL,
+
     titulo VARCHAR(100),
     descricao TEXT,
     link_arquivo TEXT,
-    professor_id INTEGER,
-    turma_id INTEGER,
-    materia_id INTEGER,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
     CONSTRAINT PK_materiais_didaticos PRIMARY KEY (id_materiais_didaticos),
-    CONSTRAINT FK_materiais_professor FOREIGN KEY (professor_id) REFERENCES professores(id_professores),
-    CONSTRAINT FK_materiais_turma FOREIGN KEY (turma_id) REFERENCES turmas(id_turmas),
-    CONSTRAINT FK_materiais_materia FOREIGN KEY (materia_id) REFERENCES materias(id_materias)
+    CONSTRAINT FK_materiais_didaticos_professor FOREIGN KEY (id_professor) REFERENCES professores(id_professores),
+    CONSTRAINT FK_materiais_didaticos_turma FOREIGN KEY (id_turma) REFERENCES turmas(id_turmas),
+    CONSTRAINT FK_materiais_didaticos_disciplina FOREIGN KEY (id_disciplina) REFERENCES disciplinas(id_disciplinas)
 );
 
--- Tabela de horários de aulas
 CREATE TABLE horarios_aulas (
     id_horarios_aulas SERIAL,
-    turma_id INTEGER,
-    materia_id INTEGER,
-    professor_id INTEGER,
+    id_turma INTEGER NOT NULL,
+    id_disciplina INTEGER NOT NULL,
+    id_professor INTEGER NOT NULL,
+
     dia_semana VARCHAR(10),
     horario_inicio TIME,
     horario_fim TIME,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
     CONSTRAINT PK_horarios_aulas PRIMARY KEY (id_horarios_aulas),
-    CONSTRAINT FK_horarios_turma FOREIGN KEY (turma_id) REFERENCES turmas(id_turmas),
-    CONSTRAINT FK_horarios_materia FOREIGN KEY (materia_id) REFERENCES materias(id_materias),
-    CONSTRAINT FK_horarios_professor FOREIGN KEY (professor_id) REFERENCES professores(id_professores)
+    CONSTRAINT FK_horarios_aulas_turma FOREIGN KEY (id_turma) REFERENCES turmas(id_turmas),
+    CONSTRAINT FK_horarios_aulas_disciplina FOREIGN KEY (id_disciplina) REFERENCES disciplinas(id_disciplinas),
+    CONSTRAINT FK_horarios_aulas_professor FOREIGN KEY (id_professor) REFERENCES professores(id_professores)
 );
 
--- Tabela de avisos gerais
 CREATE TABLE avisos_gerais (
     id_avisos_gerais SERIAL,
+    id_usuario_autor INTEGER NOT NULL,
+
     titulo VARCHAR(100),
     mensagem TEXT,
     data_envio DATE DEFAULT CURRENT_DATE,
-    autor_id INTEGER,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
     CONSTRAINT PK_avisos_gerais PRIMARY KEY (id_avisos_gerais),
-    CONSTRAINT FK_avisos_autor FOREIGN KEY (autor_id) REFERENCES usuarios(id_usuarios)
+    CONSTRAINT FK_avisos_gerais_usuario_autor FOREIGN KEY (id_usuario_autor) REFERENCES usuarios(id_usuarios)
 );
 
--- Tabela de ocorrências (observações/disciplinares)
 CREATE TABLE ocorrencias (
     id_ocorrencias SERIAL,
-    aluno_id INTEGER,
+    id_aluno INTEGER NOT NULL,
+    id_usuario_registrador INTEGER NOT NULL,
+
     data_ocorrencia DATE,
     descricao TEXT,
-    registrada_por INTEGER,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+
     CONSTRAINT PK_ocorrencias PRIMARY KEY (id_ocorrencias),
-    CONSTRAINT FK_ocorrencia_aluno FOREIGN KEY (aluno_id) REFERENCES alunos(id_alunos),
-    CONSTRAINT FK_ocorrencia_usuario FOREIGN KEY (registrada_por) REFERENCES usuarios(id_usuarios)
+    CONSTRAINT FK_ocorrencias_aluno FOREIGN KEY (id_aluno) REFERENCES alunos(id_alunos),
+    CONSTRAINT FK_ocorrencias_usuario_registrador FOREIGN KEY (id_usuario_registrador) REFERENCES usuarios(id_usuarios)
 );

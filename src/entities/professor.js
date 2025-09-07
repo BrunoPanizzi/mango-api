@@ -1,72 +1,153 @@
-import { Usuario, NovoUsuario } from './usuario.js';
+// Entidades simplificadas: apenas ids de FK (idUsuario, idDisciplinaEspecialidade)
 
-// Representa um novo professor a ser criado (antes de existir no banco)
 export class NovoProfessor {
     /**
-     * @param {NovoUsuario} usuario
-     * @param {string} disciplina_especialidade
+     * @param {number} idUsuario
+     * @param {number} idDisciplinaEspecialidade
+     * @param {string} telefone
+     * @param {string} genero
+     * @param {string} cpf
+     * @param {string|Date} nascimento
+     * @param {string} logradouro
+     * @param {string} numero
+     * @param {string} bairro
+     * @param {string} cep
+     * @param {string} cidade
+     * @param {string} estado
+     * @param {string} formacaoAcademica
      */
-    constructor(usuario, disciplina_especialidade) {
-        this.usuario = usuario;
-        this.disciplina_especialidade = disciplina_especialidade;
+    constructor(
+        idUsuario,
+        idDisciplinaEspecialidade,
+        telefone,
+        genero,
+        cpf,
+        nascimento,
+        logradouro,
+        numero,
+        bairro,
+        cep,
+        cidade,
+        estado,
+        formacaoAcademica
+    ) {
+        this.idUsuario = idUsuario;
+        this.idDisciplinaEspecialidade = idDisciplinaEspecialidade;
+        this.telefone = telefone;
+        this.genero = genero;
+        this.cpf = cpf;
+        this.nascimento = nascimento instanceof Date ? nascimento : new Date(nascimento);
+        this.logradouro = logradouro;
+        this.numero = numero;
+        this.bairro = bairro;
+        this.cep = cep;
+        this.cidade = cidade;
+        this.estado = estado;
+        this.formacaoAcademica = formacaoAcademica;
     }
 
     /**
-     * Cria uma instância de NovoProfessor a partir de um objeto
+     * Aceita camelCase ou snake_case
      * @param {Object} obj
-     * @param {Object} obj.usuario
-     * @param {string} obj.disciplina_especialidade
      * @returns {NovoProfessor}
      */
     static fromObj(obj) {
         return new NovoProfessor(
-            NovoUsuario.fromObj(obj.usuario),
-            obj.disciplina_especialidade
+            obj.idUsuario ?? obj.id_usuario,
+            obj.idDisciplinaEspecialidade ?? obj.id_disciplina_especialidade,
+            obj.telefone,
+            obj.genero,
+            obj.cpf,
+            obj.nascimento,
+            obj.logradouro,
+            obj.numero,
+            obj.bairro,
+            obj.cep,
+            obj.cidade,
+            obj.estado,
+            obj.formacaoAcademica ?? obj.formacao_academica
         );
     }
 }
 
-// Representa um professor existente no banco
 export class Professor {
     /**
      * @param {number} id
-     * @param {Usuario} usuario
-     * @param {string} disciplina_especialidade
+     * @param {number} idUsuario
+     * @param {number} idDisciplinaEspecialidade
+     * @param {string} telefone
+     * @param {string} genero
+     * @param {string} cpf
+     * @param {string|Date} nascimento
+     * @param {string} logradouro
+     * @param {string} numero
+     * @param {string} bairro
+     * @param {string} cep
+     * @param {string} cidade
+     * @param {string} estado
+     * @param {string} formacaoAcademica
+     * @param {Date|string} [createdAt]
+     * @param {Date|string} [updatedAt]
      */
-    constructor(id, usuario, disciplina_especialidade) {
+    constructor(
+        id,
+        idUsuario,
+        idDisciplinaEspecialidade,
+        telefone,
+        genero,
+        cpf,
+        nascimento,
+        logradouro,
+        numero,
+        bairro,
+        cep,
+        cidade,
+        estado,
+        formacaoAcademica,
+        createdAt,
+        updatedAt
+    ) {
         this.id = id;
-        this.usuario = usuario;
-        this.disciplina_especialidade = disciplina_especialidade;
+        this.idUsuario = idUsuario;
+        this.idDisciplinaEspecialidade = idDisciplinaEspecialidade;
+        this.telefone = telefone;
+        this.genero = genero;
+        this.cpf = cpf;
+        this.nascimento = nascimento instanceof Date ? nascimento : new Date(nascimento);
+        this.logradouro = logradouro;
+        this.numero = numero;
+        this.bairro = bairro;
+        this.cep = cep;
+        this.cidade = cidade;
+        this.estado = estado;
+        this.formacaoAcademica = formacaoAcademica;
+        this.createdAt = createdAt ? (createdAt instanceof Date ? createdAt : new Date(createdAt)) : undefined;
+        this.updatedAt = updatedAt ? (updatedAt instanceof Date ? updatedAt : new Date(updatedAt)) : undefined;
     }
 
     /**
-     * Cria uma instância de Professor a partir de uma linha do banco de dados
-     * 
-     * @param {Object} row
-     * @param {Usuario} usuario
-     * @returns {Professor}
-     */
-    static fromRow(row, usuario) {
-        return Professor.fromObj({
-            id: row.id_professores,
-            disciplina_especialidade: row.disciplina_especialidade,
-            usuario,
-        });
-    }
-
-    /**
-     * Cria uma instância de Professor a partir de um objeto
+     * Aceita camelCase ou snake_case
      * @param {Object} obj
-     * @param {number} obj.id
-     * @param {Object} obj.usuario
-     * @param {string} obj.disciplina_especialidade
      * @returns {Professor}
      */
     static fromObj(obj) {
         return new Professor(
-            obj.id,
-            Usuario.fromObj(obj.usuario),
-            obj.disciplina_especialidade
+            obj.id ?? obj.id_professores,
+            obj.idUsuario ?? obj.id_usuario,
+            obj.idDisciplinaEspecialidade ?? obj.id_disciplina_especialidade,
+            obj.telefone,
+            obj.genero,
+            obj.cpf,
+            obj.nascimento,
+            obj.logradouro,
+            obj.numero,
+            obj.bairro,
+            obj.cep,
+            obj.cidade,
+            obj.estado,
+            obj.formacaoAcademica ?? obj.formacao_academica,
+            obj.createdAt ?? obj.created_at,
+            obj.updatedAt ?? obj.updated_at
         );
     }
 }
