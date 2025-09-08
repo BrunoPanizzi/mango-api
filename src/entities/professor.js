@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const novoProfessorSchema = z.object({
-    idUsuario: z.number(),
+    idUsuario: z.number().optional(),
     idDisciplinaEspecialidade: z.number(),
     telefone: z.string(),
     genero: z.string(),
@@ -38,7 +38,7 @@ const professorSchema = z.object({
 export class NovoProfessor {
     /**
      * @param {{
-     *   idUsuario: number,
+     *   idUsuario: number|undefined,
      *   idDisciplinaEspecialidade: number,
      *   telefone: string,
      *   genero: string,

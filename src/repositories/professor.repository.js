@@ -1,18 +1,11 @@
 import { NovoProfessor, Professor } from '../entities/professor.js';
-import { NovoUsuario } from '../entities/usuario.js';
 
-export class ProfessorService {
+export class ProfessorRepository {
     /**
      * @param {import('../db/index.js').PoolClient} db
-     * @param {import('./usuario.service.js').UsuarioService} usuarioService
-     * @param {import('./disciplina.service.js').DisciplinaService} disciplinaService
-     * @param {import('../repositories/professor.repository.js').ProfessorRepository} professorRepository
      */
-    constructor(db, usuarioService, disciplinaService, professorRepository) {
+    constructor(db) {
         this.db = db;
-        this.usuarioService = usuarioService;
-        this.disciplinaService = disciplinaService;
-        this.professorRepository = professorRepository;
     }
 
     /**
@@ -20,18 +13,27 @@ export class ProfessorService {
      * @returns {Promise<Professor[]>}
      */
     async list() {
-        const professores = await this.professorRepository.list();
+        const res = await this.db.query(
+            `SELECT * FROM professores`
+        );
 
-        return Promise.all(professores.map(async (professor) => {
-            const usuario = await this.usuarioService.getById(professor.idUsuario);
-            const disciplinaEspecialidade = await this.disciplinaService.getById(professor.idDisciplinaEspecialidade);
-
-            return {
-                ...professor,
-                usuario,
-                disciplinaEspecialidade,
-                disciplinas: []
-            };
+        return res.rows.map(row => Professor.fromObj({
+            id: row.id_professores,
+            idUsuario: row.id_usuario,
+            idDisciplinaEspecialidade: row.id_disciplina_especialidade,
+            telefone: row.telefone,
+            genero: row.genero,
+            cpf: row.cpf,
+            nascimento: row.nascimento,
+            logradouro: row.logradouro,
+            numero: row.numero,
+            bairro: row.bairro,
+            cep: row.cep,
+            cidade: row.cidade,
+            estado: row.estado,
+            formacaoAcademica: row.formacao_academica,
+            createdAt: row.created_at,
+            updatedAt: row.updated_at
         }));
     }
 
@@ -105,22 +107,62 @@ export class ProfessorService {
 
     /**
      * Cria um novo professor (usando IDs de usuario e disciplina existentes)
-     * @param {NovoUsuario|null} novoUsuario
      * @param {NovoProfessor} novoProfessor
      * @returns {Promise<Professor>}
      */
-    async create(novoUsuario, novoProfessor) {
-        if (!novoProfessor.idUsuario) {
-            const createdUser = await this.usuarioService.create({
-                ...novoUsuario,
-                tipo_usuario: 'professor'
-            });
-            novoProfessor.idUsuario = createdUser.id;
-        }
+    async create(novoProfessor) {
+        const res = await this.db.query(
+            `INSERT INTO professores (
+                id_usuario,
+                id_disciplina_especialidade,
+                telefone,
+                genero,
+                cpf,
+                nascimento,
+                logradouro,
+                numero,
+                bairro,
+                cep,
+                cidade,
+                estado,
+                formacao_academica
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
+            [
+                novoProfessor.idUsuario,
+                novoProfessor.idDisciplinaEspecialidade,
+                novoProfessor.telefone,
+                novoProfessor.genero,
+                novoProfessor.cpf,
+                novoProfessor.nascimento,
+                novoProfessor.logradouro,
+                novoProfessor.numero,
+                novoProfessor.bairro,
+                novoProfessor.cep,
+                novoProfessor.cidade,
+                novoProfessor.estado,
+                novoProfessor.formacaoAcademica
+            ]
+        );
 
-        const professor = await this.professorRepository.create(novoProfessor)
-
-        return professor;
+        const row = res.rows[0];
+        return Professor.fromObj({
+            id: row.id_professores,
+            idUsuario: row.id_usuario,
+            idDisciplinaEspecialidade: row.id_disciplina_especialidade,
+            telefone: row.telefone,
+            genero: row.genero,
+            cpf: row.cpf,
+            nascimento: row.nascimento,
+            logradouro: row.logradouro,
+            numero: row.numero,
+            bairro: row.bairro,
+            cep: row.cep,
+            cidade: row.cidade,
+            estado: row.estado,
+            formacaoAcademica: row.formacao_academica,
+            createdAt: row.created_at,
+            updatedAt: row.updated_at
+        });
     }
 
     /**
