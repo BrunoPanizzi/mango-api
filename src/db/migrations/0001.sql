@@ -96,6 +96,8 @@ CREATE TABLE turmas (
 
     nome VARCHAR(50) NOT NULL,
     ano_escolar INT NOT NULL,
+    quantidade_maxima INT NOT NULL, -- quantidade máxima de alunos na turma
+    turno VARCHAR(20) NOT NULL, -- manhã, tarde
     serie VARCHAR(50) NOT NULL,
 
     created_at TIMESTAMP DEFAULT NOW(),
