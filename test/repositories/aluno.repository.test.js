@@ -1,24 +1,23 @@
-import { it, describe, after, beforeEach, afterEach } from 'node:test';
-import assert from 'node:assert/strict';
+import { it, describe, before, after, beforeEach, afterEach } from 'node:test'
+import assert from 'node:assert/strict'
 
-import { NovoAluno, Aluno } from '../src/entities/aluno.js';
-import { AlunoService } from '../src/services/aluno.service.js';
-import { AlunoRepository } from '../src/repositories/aluno.repository.js';
+import { NovoAluno, Aluno } from '../../src/entities/aluno.js'
+import { AlunoRepository } from '../../src/repositories/aluno.repository.js'
 
-import { get_db, cleanup } from '../src/db/index.js';
-import { migrate } from '../src/db/migrate.js';
+import { get_db, cleanup } from '../../src/db/index.js'
+import { migrate } from '../../src/db/migrate.js'
 
-describe('Aluno Service', async () => {
+describe('Aluno Repository', async () => {
+
     /** @type {import('pg').Client} */
     let db;
-    /** @type {AlunoService} */
-    let alunoService;
+    /** @type {AlunoRepository} */
+    let alunoRepository;
 
     beforeEach(async () => {
         db = await get_db();
         await migrate(db);
-        const alunoRepository = new AlunoRepository(db);
-        alunoService = new AlunoService(db, alunoRepository);
+        alunoRepository = new AlunoRepository(db);
         await db.query("TRUNCATE TABLE alunos RESTART IDENTITY CASCADE");
     });
 
@@ -31,7 +30,7 @@ describe('Aluno Service', async () => {
     });
 
     it('should create a new aluno', async () => {
-        const novoAluno = NovoAluno.fromObj({
+        const novoAluno = new NovoAluno({
             nome: 'João Silva',
             cns: '123456789012345',
             nascimento: '2010-05-10',
@@ -54,7 +53,7 @@ describe('Aluno Service', async () => {
             responsavel2Parentesco: 'Pai'
         });
 
-        const aluno = await alunoService.create(novoAluno);
+        const aluno = await alunoRepository.create(novoAluno);
 
         assert.ok(aluno instanceof Aluno);
         assert.strictEqual(aluno.nome, 'João Silva');
@@ -80,7 +79,7 @@ describe('Aluno Service', async () => {
     });
 
     it('should create an aluno with only required fields', async () => {
-        const novoAluno = NovoAluno.fromObj({
+        const novoAluno = new NovoAluno({
             nome: 'Ana Santos',
             cns: '987654321012345',
             nascimento: '2011-03-15',
@@ -98,7 +97,7 @@ describe('Aluno Service', async () => {
             responsavel1Parentesco: 'Pai'
         });
 
-        const aluno = await alunoService.create(novoAluno);
+        const aluno = await alunoRepository.create(novoAluno);
 
         assert.ok(aluno instanceof Aluno);
         assert.strictEqual(aluno.nome, 'Ana Santos');
@@ -112,7 +111,7 @@ describe('Aluno Service', async () => {
     });
 
     it('should get an aluno by ID', async () => {
-        const novoAluno = NovoAluno.fromObj({
+        const novoAluno = new NovoAluno({
             nome: 'Aluno Get',
             cns: '111222333444555',
             nascimento: '2012-01-02',
@@ -131,9 +130,9 @@ describe('Aluno Service', async () => {
             responsavel1Parentesco: 'Pai'
         });
 
-        const createdAluno = await alunoService.create(novoAluno);
+        const createdAluno = await alunoRepository.create(novoAluno);
 
-        const aluno = await alunoService.getById(createdAluno.id);
+        const aluno = await alunoRepository.getById(createdAluno.id);
 
         assert.ok(aluno instanceof Aluno);
         assert.strictEqual(aluno.nome, 'Aluno Get');
@@ -154,12 +153,12 @@ describe('Aluno Service', async () => {
     });
 
     it('should return null when getting a non-existent aluno', async () => {
-        const aluno = await alunoService.getById(9999);
+        const aluno = await alunoRepository.getById(9999);
         assert.strictEqual(aluno, null);
     });
 
     it('should list all alunos', async () => {
-        const novoAluno1 = NovoAluno.fromObj({
+        const novoAluno1 = new NovoAluno({
             nome: 'Aluno One',
             cns: '111111111111111',
             nascimento: '2011-01-01',
@@ -176,7 +175,7 @@ describe('Aluno Service', async () => {
             responsavel1Telefone: '11111111111',
             responsavel1Parentesco: 'Pai'
         });
-        const novoAluno2 = NovoAluno.fromObj({
+        const novoAluno2 = new NovoAluno({
             nome: 'Aluno Two',
             cns: '222222222222222',
             nascimento: '2012-02-02',
@@ -193,10 +192,10 @@ describe('Aluno Service', async () => {
             responsavel1Telefone: '22222222222',
             responsavel1Parentesco: 'Mãe'
         });
-        await alunoService.create(novoAluno1);
-        await alunoService.create(novoAluno2);
+        await alunoRepository.create(novoAluno1);
+        await alunoRepository.create(novoAluno2);
 
-        const alunos = await alunoService.list();
+        const alunos = await alunoRepository.list();
 
         assert.ok(Array.isArray(alunos));
         assert.strictEqual(alunos.length, 2);
@@ -206,7 +205,7 @@ describe('Aluno Service', async () => {
     });
 
     it('should update an aluno', async () => {
-        const createdAluno = await alunoService.create(NovoAluno.fromObj({
+        const createdAluno = await alunoRepository.create(new NovoAluno({
             nome: 'Aluno Update',
             cns: '123456789012345',
             nascimento: '2010-01-01',
@@ -225,7 +224,7 @@ describe('Aluno Service', async () => {
             religiao: 'Católica'
         }));
 
-        const updatedAluno = await alunoService.update(createdAluno.id, {
+        const updatedAluno = await alunoRepository.update(createdAluno.id, {
             nome: 'Aluno Atualizado',
             cns: '987654321098765',
             nascimento: '2011-12-31',
@@ -263,7 +262,7 @@ describe('Aluno Service', async () => {
     });
 
     it('should delete an aluno', async () => {
-        const createdAluno = await alunoService.create(NovoAluno.fromObj({
+        const createdAluno = await alunoRepository.create(new NovoAluno({
             nome: 'Aluno Delete',
             cns: '123456789012345',
             nascimento: '2010-01-01',
@@ -281,9 +280,9 @@ describe('Aluno Service', async () => {
             responsavel1Parentesco: 'Pai'
         }));
 
-        await alunoService.delete(createdAluno.id);
+        await alunoRepository.delete(createdAluno.id);
 
-        const deletedAluno = await alunoService.getById(createdAluno.id);
+        const deletedAluno = await alunoRepository.getById(createdAluno.id);
         assert.strictEqual(deletedAluno, null);
     });
 });
