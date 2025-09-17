@@ -1,6 +1,12 @@
 import { Router } from 'express';
+import { z } from 'zod/v4'
+
 import { TurmaService } from '../services/turma.service.js';
 import { createAuthMiddleware } from './auth.middleware.js';
+
+const turmaParamsSchema = z.object({
+    with: z.enum(['alunos']).optional()
+});
 
 /**
  * @param {import('../db/index.js').PoolClient} db
@@ -14,12 +20,20 @@ export function createTurmaRouter(db, hashingService) {
     router.use(createAuthMiddleware(hashingService));
 
     router.get('/', async (req, res) => {
-        const turmas = await turmaService.list();
+        const { success, data } = turmaParamsSchema.safeParse(req.query);
+
+        const params = success ? data : {};
+
+        const turmas = await turmaService.list(params);
         res.json(turmas);
     });
 
     router.get('/:id', async (req, res) => {
-        const turma = await turmaService.getById(req.params.id);
+        const { success, data } = turmaParamsSchema.safeParse(req.query);
+
+        const params = success ? data : {};
+
+        const turma = await turmaService.getById(req.params.id, params);
         if (!turma) return res.status(404).json({ error: 'Turma não encontrada' });
         res.json(turma);
     });
