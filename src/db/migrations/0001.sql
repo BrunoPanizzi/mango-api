@@ -180,10 +180,12 @@ CREATE TABLE anos_escolares (
 CREATE TABLE historicos_escolares (
     id_historicos_escolares SERIAL,
     id_aluno INT NOT NULL,
-    id_ano_escolar INT NOT NULL,
+    id_disciplina INT,
+    -- id_ano_escolar INT NOT NULL,
 
     nome_escola VARCHAR(150) NOT NULL,
     serie_concluida VARCHAR(50) NOT NULL,
+    ano_conclusao INT NOT NULL,
     nota NUMERIC(5,2) NOT NULL,
 
     created_at TIMESTAMP DEFAULT NOW(),
@@ -191,7 +193,8 @@ CREATE TABLE historicos_escolares (
 
     CONSTRAINT PK_id_historicos_escolares PRIMARY KEY (id_historicos_escolares),
     CONSTRAINT FK_historicos_escolares_aluno FOREIGN KEY (id_aluno) REFERENCES alunos(id_alunos),
-    CONSTRAINT FK_historicos_escolares_ano_escolar FOREIGN KEY (id_ano_escolar) REFERENCES anos_escolares(id_anos_escolares)
+    CONSTRAINT FK_historicos_escolares_disciplina FOREIGN KEY (id_disciplina) REFERENCES disciplinas(id_disciplinas)
+    -- CONSTRAINT FK_historicos_escolares_ano_escolar FOREIGN KEY (id_ano_escolar) REFERENCES anos_escolares(id_anos_escolares)
 );
 
 CREATE TABLE faltas (

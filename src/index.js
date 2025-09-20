@@ -13,6 +13,7 @@ import { createSecretariaRouter } from "./controllers/secretaria.controller.js";
 import { createAuthRouter } from "./controllers/auth.controller.js";
 import { createDisciplinaRouter } from "./controllers/disciplina.controller.js";
 import { createTurmaRouter } from "./controllers/turma.controller.js";
+import { createHistoricoEscolarRouter } from "./controllers/historico_escolar.controller.js";
 import { HashingService } from "./services/hashing.service.js";
 
 config()
@@ -43,6 +44,7 @@ app.use('/secretarias', createSecretariaRouter(db, hashingService));
 app.use('/auth', createAuthRouter(db, hashingService));
 app.use('/disciplinas', createDisciplinaRouter(db, hashingService));
 app.use('/turmas', createTurmaRouter(db, hashingService));
+app.use('/historicos-escolares', createHistoricoEscolarRouter(db, hashingService));
 
 app.listen(port, () => {
     console.log(`Servidor rodando na porta ${port}`);
